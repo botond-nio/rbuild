@@ -59,6 +59,7 @@ function load_conf {
 function stage {
     echo Staging source from $LOCAL_DIR to $BUILD_HOST:$STAGING_DIR
 
+    tmpfile=""
     if [ -e "$PWD/.rbuild.exclude" ]; then
         exclude="$PWD/.rbuild.exclude"
         echo >&2 "Using rsync exclude file $exclude"
@@ -68,11 +69,14 @@ function stage {
             echo >&2 "Using rsync exclude file $exclude"
         else
             echo >&2 "Using built-in rsync exclude file list (displayed with $0 -x)"
-            exclude="<($0 -x)"
+            tmpfile=$(mktemp)
+            ($0 -x) > "$tmpfile"
+            exclude="$tmpfile"
         fi
     fi
 
-    rsync -r -l -c --executability --del --inplace  -z -e "$SSH" --rsync-path="mkdir -p \"$STAGING_DIR\" && rsync" --cvs-exclude --exclude .hg --exclude .git --exclude-from <($0 -x) "$LOCAL_DIR/" "$BUILD_HOST:\"$STAGING_DIR\""
+    rsync -r -l -c --executability --del --inplace  -z -e "$SSH" --rsync-path="mkdir -p \"$STAGING_DIR\" && rsync" --cvs-exclude --exclude .hg --exclude .git --exclude-from <(cat $exclude) "$LOCAL_DIR/" "$BUILD_HOST:\"$STAGING_DIR\""
+    [ -f "$tmpfile" ] && rm "$tmpfile"
 }
 
 function autoreconf {
