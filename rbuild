@@ -6,7 +6,7 @@ LOCAL_DIR_ANCHORS=".hg .git configure.ac"
 BUILD_ENV=debug
 INSTALL_DIR='$HOME/.local'
 BUILD_JOBS=8
-RBUILD_DIR=rbuild
+RBUILD_DIR=${RBUILD_DIR:-rbuild}
 
 upsearch () {
     slashes=${PWD//[^\/]/}
